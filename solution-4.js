@@ -1,15 +1,12 @@
 {
-    init: function (elevator0s, floors) {
+    init: function (elevators, floors) {
 
-        // ------------ INIT VALUES ----------- //
-        // first elevator0
-        var elevator0 = elevators[0];
-
-        // queue up destination requests
-        elevator0.destinationQueue = [];
-
-        // ------------ FUNCTIONS ------------ //
+        var elevator = elevators[0]; // Let's use the first elevator
+        var elevator1 = elevators[1];
         
+        // queue up destination requests
+        elevator.destinationQueue = [];
+
         function getbusiestFloor(arr) {
 
             var counts = {};
@@ -33,82 +30,83 @@
 
         function checkBusiest() {
 
-            console.log("Checking Busiest");
-            
-            if (elevator0.destinationQueue.Length > 0) {
-                //elevator0.goToFloor(elevator0.destinationQueue.pop);
-                for (i = 0; i < getbusiestFloor(ourarr).length; i++) {
-                    var busiestfloor = getbusiestFloor(ourarr)[i][0];
-                    console.log("Going to floor " + busiestfloor);
-                    elevator0.goToFloor(busiestfloor);
-                }
-                // empty it
-                elevator0.destinationQueue = [];
-                elevator0.goToFloor(0);
-            } else {
-                elevator0.goToFloor(0);
-            }
-        }
-        
-        function isInQueue(ouritem) {
-            var a;
-            a = elevator0.destinationQueue.indexOf(ouritem);
-            if (a > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        
-        function removeFromQueue(ourNumber){
-            // this could cause a conflict
-            console.log("removing " +ourNumber);
-            for(var i = elevator0.destinationQueue.length - 1; i >= 0; i--) {
-                if(elevator0.destinationQueue[i] === ourNumber) {
-                    elevator0.destinationQueue.splice(i, 1);
-                }
-            }
-        }
-        
-        // ------------ EVENTS ------------ //
+            if (elevator.destinationQueue.length > 0) {
 
-        elevator0.on("floor_button_pressed", function (floorNum) {
+                for (i = 0; i < getbusiestFloor(elevator.destinationQueue).length; i++) {
+                    var busiestfloor = getbusiestFloor(elevator.destinationQueue)[i][0];
+                    var location = elevator.destinationQueue.indexOf(busiestfloor);
+                    elevator.destinationQueue.remove(location);
+                    elevator.goToFloor(busiestfloor);
+                }
+                elevator.goToFloor(0);
+            } else {
+                elevator.goToFloor(0);
+            }
+        }
+        
+        function checkNear(floor){
+            
+            var nextfloor = floor + 1;
+            var prevfloor = floor - 1;
+            
+            
+            if(elevator.destinationQueue.indexOf(nextfloor) > -1 || elevator.destinationQueue.indexOf(prevfloor) > -1){
+                                
+                var counts = {};
+
+                for(var i = 0; i< elevator.destinationQueue.length; i++) {
+                    var num = elevator.destinationQueue[i];
+                    counts[num] = counts[num] ? counts[num]+1 : 1;
+                }
+                
+                if (counts[nextfloor] < counts[prevfloor]){
+                    elevator.goToFloor(prevfloor);
+                }else {
+                    elevator.goToFloor(nextfloor);
+                }
+                
+                elevator.goToFloor(nextfloor);
+            }
+        }
+        
+        
+        // function to remove element from array
+        Array.prototype.remove = function(from, to) {
+            var rest = this.slice((to || from) + 1 || this.length);
+            this.length = from < 0 ? this.length + from : from;
+            return this.push.apply(this, rest);
+        };
+        
+        elevator.on("floor_button_pressed", function (floorNum) {
             // add buttons to a queue ( in this case pushing it more times helps!)
-            elevator0.destinationQueue.push(floorNum);
-            checkBusiest();
+            elevator.destinationQueue.push(floorNum);
+
         });
 
-        // if we are stopped at a floor we may go to a closer floor if someone is waiting
-        elevator0.on("stopped_at_floor", function (floorNum) {          
-            // check a nearby floor
-            var above = floorNum +1;
-            var below = floorNum -1;
-            
-            if (isInQueue(above)){
-                elevator0.goToFloor(above);              
-                removeFromQueue(above);
-            }
-            if (isInQueue(below)){
-                elevator0.goToFloor(below);
-                removeFromQueue(below);
-            }
-            // go back to checking busiest floor
-            checkBusiest();
-            
+        elevator.on("stopped_at_floor", function (floorNum) {
+
+            checkNear(floorNum);
         });
 
-        // Whenever the elevator0 is idle (has no more queued destinations) ...
-        elevator0.on("idle", function () {
+        // Whenever the elevator is idle (has no more queued destinations) ...
+        elevator.on("idle", function () {
             // let's go to all the floors (or did we forget one?)
-            elevator0.goToFloor(0);
-            //elevator0.goToFloor(1);
-            //elevator0.goToFloor(2);
-            //elevator0.goToFloor(3);
-            //elevator0.goToFloor(4);
+            checkBusiest();
+        });
+        elevator1.on("idle", function () {
+            // let's go to all the floors (or did we forget one?)
+            elevator1.goToFloor(0);
+            elevator1.goToFloor(1);
+            elevator1.goToFloor(2);
+            elevator1.goToFloor(3);
+            elevator1.goToFloor(4);
+            elevator1.goToFloor(5);
+            elevator1.goToFloor(6);
+            elevator1.goToFloor(7);
         });
     },
 
-        update: function (dt, elevator0s, floors) {
+        update: function (dt, elevators, floors) {
             // We normally don't need to do anything here
         }
 }
