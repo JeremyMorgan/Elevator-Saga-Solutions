@@ -5,7 +5,7 @@
 
         // queue up destination requests
         elevator.destinationQueue = [];
-   
+
         function getbusiestFloor(arr) {
 
             var counts = {};
@@ -28,26 +28,30 @@
         }
 
         function checkBusiest() {
-            
-            console.log("Checking Busiest");
+
+            console.log("Checking Busiest in " + elevator.destinationQueue.length);
             console.log(JSON.stringify(elevator.destinationQueue));
 
-            if (elevator.destinationQueue.Length > 0) {
-                //elevator.goToFloor(elevator.destinationQueue.pop);
-                console.log("Entering Queue");
+            if (elevator.destinationQueue.length > 0) {
+
                 for (i = 0; i < getbusiestFloor(elevator.destinationQueue).length; i++) {
                     var busiestfloor = getbusiestFloor(elevator.destinationQueue)[i][0];
-                    console.log("Going to floor " + busiestfloor);
+                    var location = elevator.destinationQueue.indexOf(busiestfloor);
+                    elevator.destinationQueue.remove(location);
                     elevator.goToFloor(busiestfloor);
                 }
-                // empty it
-                elevator.destinationQueue = [];
                 elevator.goToFloor(0);
             } else {
                 elevator.goToFloor(0);
             }
         }
 
+        Array.prototype.remove = function(from, to) {
+            var rest = this.slice((to || from) + 1 || this.length);
+            this.length = from < 0 ? this.length + from : from;
+            return this.push.apply(this, rest);
+        };
+        
         elevator.on("floor_button_pressed", function (floorNum) {
             // add buttons to a queue ( in this case pushing it more times helps!)
             elevator.destinationQueue.push(floorNum);
@@ -55,18 +59,13 @@
         });
 
         elevator.on("stopped_at_floor", function (floorNum) {
-            checkBusiest();
+            //checkBusiest();
         });
 
         // Whenever the elevator is idle (has no more queued destinations) ...
         elevator.on("idle", function () {
             // let's go to all the floors (or did we forget one?)
             checkBusiest();
-            //elevator.goToFloor(0);
-            //elevator.goToFloor(1);
-            //elevator.goToFloor(2);
-            //elevator.goToFloor(3);
-            //elevator.goToFloor(4);
         });
     },
 
