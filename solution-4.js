@@ -3,9 +3,12 @@
 
         var elevator = elevators[0]; // Let's use the first elevator
         var elevator1 = elevators[1];
-        
+
+        var lastQueueUsed = "";
+
         // queue up destination requests
         elevator.destinationQueue = [];
+        elevator1.destinationQueue = [];
 
         function getbusiestFloor(arr) {
 
@@ -42,44 +45,65 @@
             } else {
                 elevator.goToFloor(0);
             }
-        }
-        
-        function checkNear(floor){
             
+            if (elevator1.destinationQueue.length > 0) {
+
+                for (i = 0; i < getbusiestFloor(elevator1.destinationQueue).length; i++) {
+                    var busiestfloor = getbusiestFloor(elevator1.destinationQueue)[i][0];
+                    var location = elevator1.destinationQueue.indexOf(busiestfloor);
+                    elevator1.destinationQueue.remove(location);
+                    elevator1.goToFloor(busiestfloor);
+                }
+                elevator1.goToFloor(0);
+            } else {
+                elevator1.goToFloor(0);
+            }
+            
+        }
+
+        function checkNear(floor){
+
             var nextfloor = floor + 1;
             var prevfloor = floor - 1;
-            
-            
+
+
             if(elevator.destinationQueue.indexOf(nextfloor) > -1 || elevator.destinationQueue.indexOf(prevfloor) > -1){
-                                
+
                 var counts = {};
 
                 for(var i = 0; i< elevator.destinationQueue.length; i++) {
                     var num = elevator.destinationQueue[i];
                     counts[num] = counts[num] ? counts[num]+1 : 1;
                 }
-                
+
                 if (counts[nextfloor] < counts[prevfloor]){
                     elevator.goToFloor(prevfloor);
                 }else {
                     elevator.goToFloor(nextfloor);
                 }
-                
+
                 elevator.goToFloor(nextfloor);
             }
         }
-        
-        
+
+
         // function to remove element from array
         Array.prototype.remove = function(from, to) {
             var rest = this.slice((to || from) + 1 || this.length);
             this.length = from < 0 ? this.length + from : from;
             return this.push.apply(this, rest);
         };
-        
+
         elevator.on("floor_button_pressed", function (floorNum) {
             // add buttons to a queue ( in this case pushing it more times helps!)
-            elevator.destinationQueue.push(floorNum);
+            if ((lastQueueUsed == "") || (lastQueueUsed = 1)){
+                elevator.destinationQueue.push(floorNum);
+                lastQueueUsed = 0;
+            }else {
+                elevator1.destinationQueue.push(floorNum);
+                lastQueueUsed = 1;
+            }
+
 
         });
 
