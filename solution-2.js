@@ -5,7 +5,7 @@
 
         // queue up destination requests
         elevator.destinationQueue = [];
-
+   
         function getbusiestFloor(arr) {
 
             var counts = {};
@@ -28,11 +28,15 @@
         }
 
         function checkBusiest() {
+            
+            console.log("Checking Busiest");
+            console.log(JSON.stringify(elevator.destinationQueue));
 
             if (elevator.destinationQueue.Length > 0) {
                 //elevator.goToFloor(elevator.destinationQueue.pop);
-                for (i = 0; i < getbusiestFloor(ourarr).length; i++) {
-                    var busiestfloor = getbusiestFloor(ourarr)[i][0];
+                console.log("Entering Queue");
+                for (i = 0; i < getbusiestFloor(elevator.destinationQueue).length; i++) {
+                    var busiestfloor = getbusiestFloor(elevator.destinationQueue)[i][0];
                     console.log("Going to floor " + busiestfloor);
                     elevator.goToFloor(busiestfloor);
                 }
@@ -47,7 +51,7 @@
         elevator.on("floor_button_pressed", function (floorNum) {
             // add buttons to a queue ( in this case pushing it more times helps!)
             elevator.destinationQueue.push(floorNum);
-            checkBusiest();
+
         });
 
         elevator.on("stopped_at_floor", function (floorNum) {
@@ -57,15 +61,16 @@
         // Whenever the elevator is idle (has no more queued destinations) ...
         elevator.on("idle", function () {
             // let's go to all the floors (or did we forget one?)
-            elevator.goToFloor(0);
+            checkBusiest();
+            //elevator.goToFloor(0);
             //elevator.goToFloor(1);
             //elevator.goToFloor(2);
             //elevator.goToFloor(3);
             //elevator.goToFloor(4);
         });
     },
-    
-    update: function (dt, elevators, floors) {
-        // We normally don't need to do anything here
-    }
+
+        update: function (dt, elevators, floors) {
+            // We normally don't need to do anything here
+        }
 }
