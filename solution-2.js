@@ -29,9 +29,6 @@
 
         function checkBusiest() {
 
-            console.log("Checking Busiest in " + elevator.destinationQueue.length);
-            console.log(JSON.stringify(elevator.destinationQueue));
-
             if (elevator.destinationQueue.length > 0) {
 
                 for (i = 0; i < getbusiestFloor(elevator.destinationQueue).length; i++) {
@@ -45,7 +42,34 @@
                 elevator.goToFloor(0);
             }
         }
+        
+        function checkNear(floor){
+            
+            var nextfloor = floor + 1;
+            var prevfloor = floor - 1;
+            
+            
+            if(elevator.destinationQueue.indexOf(nextfloor) > -1 || elevator.destinationQueue.indexOf(prevfloor) > -1){
+                                
+                var counts = {};
 
+                for(var i = 0; i< elevator.destinationQueue.length; i++) {
+                    var num = elevator.destinationQueue[i];
+                    counts[num] = counts[num] ? counts[num]+1 : 1;
+                }
+                
+                if (counts[nextfloor] < counts[prevfloor]){
+                    elevator.goToFloor(prevfloor);
+                }else {
+                    elevator.goToFloor(nextfloor);
+                }
+                
+                elevator.goToFloor(nextfloor);
+            }
+        }
+        
+        
+        // function to remove element from array
         Array.prototype.remove = function(from, to) {
             var rest = this.slice((to || from) + 1 || this.length);
             this.length = from < 0 ? this.length + from : from;
@@ -60,6 +84,7 @@
 
         elevator.on("stopped_at_floor", function (floorNum) {
             //checkBusiest();
+            checkNear(floorNum);
         });
 
         // Whenever the elevator is idle (has no more queued destinations) ...
